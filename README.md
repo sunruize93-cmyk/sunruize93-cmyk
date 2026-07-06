@@ -4,6 +4,16 @@
 
 <img src="./svg/header.svg" alt="Profile Header" width="840" />
 
+<br/>
+
+<a href="https://www.linkedin.com/in/ruize-sun-43b800397" target="_blank" style="text-decoration: none;">
+  <img src="https://img.shields.io/badge/LinkedIn-Ruize%20Sun-00d4ff?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=0a0e27" alt="LinkedIn" />
+</a>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="mailto:support@nestlinker.com" style="text-decoration: none;">
+  <img src="https://img.shields.io/badge/Email-support%40nestlinker.com-7c3aed?style=for-the-badge&logo=gmail&logoColor=white&labelColor=0a0e27" alt="Email" />
+</a>
+
 <br/><br/>
 
 <img src="./svg/radar.svg" alt="Developer DNA" width="415" />
