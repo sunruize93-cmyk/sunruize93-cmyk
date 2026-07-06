@@ -39,18 +39,23 @@
     <text x="155" y="139" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">⭐ STARS</text>
   </g>
   <g class="fi" style="animation-delay:0.35s">
-    <rect x="240" y="96" width="130" height="56" rx="10" fill="rgba(0,255,136,0.04)" stroke="rgba(0,255,136,0.1)" stroke-width="1"/>
-    <text x="305" y="119" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#00ff88" filter="url(#glow)">319</text>
-    <text x="305" y="139" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">🔥 COMMITS</text>
+    <rect x="90" y="146" width="130" height="56" rx="10" fill="rgba(255,215,0,0.04)" stroke="rgba(255,215,0,0.1)" stroke-width="1"/>
+    <text x="155" y="169" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#FFD700" filter="url(#glow)">5</text>
+    <text x="155" y="189" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">⭐ STARS</text>
   </g>
   <g class="fi" style="animation-delay:0.45s">
-    <rect x="390" y="96" width="130" height="56" rx="10" fill="rgba(124,58,237,0.04)" stroke="rgba(124,58,237,0.15)" stroke-width="1"/>
-    <text x="455" y="119" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#7c3aed" filter="url(#glow)">1</text>
-    <text x="455" y="139" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">🔀 PRs</text>
+    <rect x="240" y="146" width="130" height="56" rx="10" fill="rgba(0,255,136,0.04)" stroke="rgba(0,255,136,0.1)" stroke-width="1"/>
+    <text x="305" y="169" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#00ff88" filter="url(#glow)">319</text>
+    <text x="305" y="189" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">🔥 COMMITS</text>
   </g>
   <g class="fi" style="animation-delay:0.55s">
-    <rect x="540" y="96" width="130" height="56" rx="10" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
-    <text x="605" y="119" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#00d4ff" filter="url(#glow)">6</text>
-    <text x="605" y="139" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">📦 REPOS</text>
+    <rect x="390" y="146" width="130" height="56" rx="10" fill="rgba(124,58,237,0.04)" stroke="rgba(124,58,237,0.1)" stroke-width="1"/>
+    <text x="455" y="169" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#7c3aed" filter="url(#glow)">1</text>
+    <text x="455" y="189" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">🔀 PRs</text>
+  </g>
+  <g class="fi" style="animation-delay:0.65s">
+    <rect x="540" y="146" width="130" height="56" rx="10" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+    <text x="605" y="169" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#00d4ff" filter="url(#glow)">6</text>
+    <text x="605" y="189" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">📦 REPOS</text>
   </g>
 </svg>
