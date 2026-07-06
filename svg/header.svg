@@ -1,56 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="840" height="180" viewBox="0 0 840 180">
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="90" viewBox="0 0 840 90">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0a0e27"/><stop offset="100%" stop-color="#0d1537"/>
     </linearGradient>
-    <linearGradient id="titleG" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7c3aed"/>
-    </linearGradient>
     <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <filter id="glow2"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>
   <style>
     @keyframes fadeIn { 0% { opacity:0; transform:translateY(10px); } 100% { opacity:1; transform:translateY(0); } }
     @keyframes twinkle { 0%,100% { opacity:0.15; } 50% { opacity:0.6; } }
     @keyframes borderP { 0%,100% { stroke-opacity:0.15; } 50% { stroke-opacity:0.35; } }
-    @keyframes pulse { 0%,100% { opacity:0.7; } 50% { opacity:1; } }
     .fi { animation: fadeIn 0.5s ease-out both; }
     .border { animation: borderP 4s ease-in-out infinite; }
     .star { animation: twinkle 3s ease-in-out infinite; }
   </style>
 
-  <rect x="1" y="1" width="838" height="178" rx="16" fill="url(#bg)"/>
-  <rect x="1" y="1" width="838" height="178" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
+  <rect x="1" y="1" width="838" height="88" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="838" height="88" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
 
   <!-- Stars -->
   <circle cx="80" cy="30" r="1" fill="#00d4ff" class="star"/><circle cx="200" cy="20" r="0.8" fill="#7c3aed" class="star" style="animation-delay:1s"/>
   <circle cx="640" cy="25" r="1.1" fill="#00d4ff" class="star" style="animation-delay:0.5s"/><circle cx="760" cy="35" r="0.7" fill="#a855f7" class="star" style="animation-delay:2s"/>
   <circle cx="400" cy="15" r="0.9" fill="#00d4ff" class="star" style="animation-delay:1.5s"/>
-  <circle cx="120" cy="155" r="0.8" fill="#7c3aed" class="star" style="animation-delay:0.8s"/><circle cx="720" cy="150" r="1" fill="#00d4ff" class="star" style="animation-delay:2.2s"/>
-
-  <!-- Name & Bio -->
-  <text x="420" y="48" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="30" font-weight="800" fill="url(#titleG)" filter="url(#glow2)" letter-spacing="2" class="fi">Srzzz</text>
-  <text x="420" y="70" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="13" fill="#8892b0" class="fi" style="animation-delay:0.1s">CEO@NestLinker</text>
+  <circle cx="120" cy="55" r="0.8" fill="#7c3aed" class="star" style="animation-delay:0.8s"/><circle cx="720" cy="50" r="1" fill="#00d4ff" class="star" style="animation-delay:2.2s"/>
 
   <!-- Stats row -->
   <g class="fi" style="animation-delay:0.25s">
-    <rect x="90" y="96" width="130" height="56" rx="10" fill="rgba(255,215,0,0.04)" stroke="rgba(255,215,0,0.1)" stroke-width="1"/>
-    <text x="155" y="119" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#FFD700" filter="url(#glow)">5</text>
-    <text x="155" y="139" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">⭐ STARS</text>
+    <rect x="90" y="17" width="130" height="56" rx="10" fill="rgba(255,215,0,0.04)" stroke="rgba(255,215,0,0.1)" stroke-width="1"/>
+    <text x="155" y="40" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#FFD700" filter="url(#glow)">5</text>
+    <text x="155" y="60" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">⭐ STARS</text>
   </g>
   <g class="fi" style="animation-delay:0.35s">
-    <rect x="240" y="96" width="130" height="56" rx="10" fill="rgba(0,255,136,0.04)" stroke="rgba(0,255,136,0.1)" stroke-width="1"/>
-    <text x="305" y="119" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#00ff88" filter="url(#glow)">319</text>
-    <text x="305" y="139" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">🔥 COMMITS</text>
+    <rect x="240" y="17" width="130" height="56" rx="10" fill="rgba(0,255,136,0.04)" stroke="rgba(0,255,136,0.1)" stroke-width="1"/>
+    <text x="305" y="40" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#00ff88" filter="url(#glow)">319</text>
+    <text x="305" y="60" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">🔥 COMMITS</text>
   </g>
   <g class="fi" style="animation-delay:0.45s">
-    <rect x="390" y="96" width="130" height="56" rx="10" fill="rgba(124,58,237,0.04)" stroke="rgba(124,58,237,0.15)" stroke-width="1"/>
-    <text x="455" y="119" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#7c3aed" filter="url(#glow)">1</text>
-    <text x="455" y="139" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">🔀 PRs</text>
+    <rect x="390" y="17" width="130" height="56" rx="10" fill="rgba(124,58,237,0.04)" stroke="rgba(124,58,237,0.15)" stroke-width="1"/>
+    <text x="455" y="40" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#7c3aed" filter="url(#glow)">1</text>
+    <text x="455" y="60" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">🔀 PRs</text>
   </g>
   <g class="fi" style="animation-delay:0.55s">
-    <rect x="540" y="96" width="130" height="56" rx="10" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
-    <text x="605" y="119" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#00d4ff" filter="url(#glow)">6</text>
-    <text x="605" y="139" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">📦 REPOS</text>
+    <rect x="540" y="17" width="130" height="56" rx="10" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+    <text x="605" y="40" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="20" font-weight="700" fill="#00d4ff" filter="url(#glow)">6</text>
+    <text x="605" y="60" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">📦 REPOS</text>
   </g>
 </svg>

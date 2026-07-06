@@ -2,10 +2,6 @@
 
 <div align="center">
 
-<img src="./svg/header.svg" alt="Profile Header" width="840" />
-
-<br/>
-
 <a href="https://www.linkedin.com/in/ruize-sun-43b800397" target="_blank" style="text-decoration: none;">
   <img src="https://img.shields.io/badge/LinkedIn-Ruize%20Sun-00d4ff?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=0a0e27" alt="LinkedIn" />
 </a>
@@ -16,10 +12,11 @@
 
 <br/><br/>
 
+<img src="./svg/header.svg" alt="Profile Header" width="840" />
 <img src="./svg/radar.svg" alt="Developer DNA" width="415" />
 <img src="./svg/tech-stack.svg" alt="Tech Stack" width="415" />
 
-<br/>
+<br/><br/>
 
 <sub>🌌 数据每日自动更新 | Powered by GitHub Actions</sub>
 
