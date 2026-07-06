@@ -304,29 +304,31 @@ def gen_tech_stack(data):
     if not langs:
         return ""
     
-    row_height = 38
-    top_pad = 65
-    card_h = top_pad + len(langs) * row_height + 30
-    bar_w = 760
+    # Square card: 480 x 480
+    row_height = 42
+    top_pad = 75
+    card_h = 480
+    bar_w = 380
 
     rows_svg = ""
-    for i, (lang, pct) in enumerate(langs):
+    # Render up to 8 languages
+    for i, (lang, pct) in enumerate(langs[:8]):
         y = top_pad + i * row_height
         fill_w = pct / 100 * bar_w
         color = LANG_COLORS.get(lang, "#888888")
         delay = 0.3 + i * 0.1
         rows_svg += f'''
     <g class="row" style="animation-delay:{delay}s">
-      <text x="40" y="{y}" class="label">{lang}</text>
-      <text x="790" y="{y}" text-anchor="end" class="pct" fill="{color}">{pct:.1f}%</text>
-      <rect x="40" y="{y+6}" width="{bar_w}" height="8" rx="4" class="track"/>
-      <rect x="40" y="{y+6}" width="{fill_w}" height="8" rx="4" fill="{color}" opacity="0.85">
+      <text x="50" y="{y}" class="label">{lang}</text>
+      <text x="430" y="{y}" text-anchor="end" class="pct" fill="{color}">{pct:.1f}%</text>
+      <rect x="50" y="{y+6}" width="{bar_w}" height="8" rx="4" class="track"/>
+      <rect x="50" y="{y+6}" width="{fill_w}" height="8" rx="4" fill="{color}" opacity="0.85">
         <animate attributeName="width" from="0" to="{fill_w}" dur="1.2s" begin="{delay}s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
       </rect>
-      <circle cx="{40+fill_w}" cy="{y+10}" r="3" fill="{color}" class="dot" style="animation-delay:{delay+1.2}s"/>
+      <circle cx="{50+fill_w}" cy="{y+10}" r="3" fill="{color}" class="dot" style="animation-delay:{delay+1.2}s"/>
     </g>'''
 
-    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="840" height="{card_h}" viewBox="0 0 840 {card_h}">
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0a0e27"/><stop offset="100%" stop-color="#0d1537"/>
@@ -347,9 +349,9 @@ def gen_tech_stack(data):
     .dot {{ animation: pulse 2s ease-in-out infinite; opacity:0; }}
     .border {{ animation: borderP 4s ease-in-out infinite; }}
   </style>
-  <rect x="1" y="1" width="838" height="{card_h-2}" rx="16" fill="url(#bg)"/>
-  <rect x="1" y="1" width="838" height="{card_h-2}" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
-  <text x="420" y="40" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="url(#tG)" filter="url(#glow)">⚡ TECH STACK</text>
+  <rect x="1" y="1" width="478" height="478" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="478" height="478" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
+  <text x="240" y="45" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="url(#tG)" filter="url(#glow)">⚡ TECH STACK</text>
   {rows_svg}
 </svg>'''
 
@@ -357,8 +359,8 @@ def gen_tech_stack(data):
 def gen_radar(data):
     """Generate hexagonal radar chart from calculated scores."""
     scores = calculate_radar_scores(data)
-    cx, cy = 240, 215
-    R = 130
+    cx, cy = 240, 245
+    R = 105
 
     # Hexagon vertex calculator (starts at top, clockwise)
     def hex_point(i, scale=1.0):
@@ -393,7 +395,7 @@ def gen_radar(data):
     # Labels
     labels = ""
     for i, (name, val) in enumerate(scores):
-        lx, ly = hex_point(i, 1.22)
+        lx, ly = hex_point(i, 1.25)
         anchor = "middle"
         if i == 1 or i == 2:
             anchor = "start"
@@ -404,7 +406,7 @@ def gen_radar(data):
 
     avg = sum(v for _, v in scores) / len(scores)
 
-    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="480" height="470" viewBox="0 0 480 470">
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0a0e27"/><stop offset="100%" stop-color="#0d1537"/>
@@ -432,10 +434,14 @@ def gen_radar(data):
     .border {{ animation: borderP 4s ease-in-out infinite; }}
   </style>
 
-  <rect x="1" y="1" width="478" height="468" rx="16" fill="url(#bg)"/>
-  <rect x="1" y="1" width="478" height="468" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
+  <rect x="1" y="1" width="478" height="478" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="478" height="478" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
 
-  <text x="240" y="40" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="url(#sG)" filter="url(#glow)">🧬 DEVELOPER DNA</text>
+  <!-- B+ Grade Ring -->
+  <circle cx="240" cy="62" r="28" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="5"/>
+  <circle cx="240" cy="62" r="28" fill="none" stroke="url(#sG)" stroke-width="5" stroke-dasharray="176" stroke-dashoffset="35" stroke-linecap="round"/>
+  <text x="240" y="69" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="18" font-weight="800" fill="#ffffff" filter="url(#glow)">B+</text>
+  <text x="240" y="105" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="10" font-weight="700" fill="#8892b0" letter-spacing="1">DEVELOPER RANK</text>
 
 {grids}
 {axes}
@@ -444,9 +450,9 @@ def gen_radar(data):
 {dots}
 {labels}
 
-  <line x1="120" y1="420" x2="360" y2="420" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
-  <text x="240" y="445" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="11" fill="#8892b0" letter-spacing="2">OVERALL</text>
-  <text x="240" y="464" text-anchor="middle" font-family="\'SFMono-Regular\',Consolas,monospace" font-size="22" font-weight="700" fill="url(#sG)" filter="url(#glow)">{avg:.1f} / 100</text>
+  <line x1="140" y1="415" x2="340" y2="415" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+  <text x="240" y="435" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="11" fill="#8892b0" letter-spacing="2">OVERALL</text>
+  <text x="240" y="456" text-anchor="middle" font-family="\'SFMono-Regular\',Consolas,monospace" font-size="22" font-weight="700" fill="url(#sG)" filter="url(#glow)">{avg:.1f} / 100</text>
 </svg>'''
 
 

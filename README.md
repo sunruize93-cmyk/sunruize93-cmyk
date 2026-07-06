@@ -6,20 +6,8 @@
 
 <br/><br/>
 
-<table>
-<tr>
-<td width="55%" align="center">
-
-<img src="./svg/radar.svg" alt="Developer DNA" width="480" />
-
-</td>
-<td width="45%" align="center">
-
-<img src="./svg/tech-stack.svg" alt="Tech Stack" width="380" />
-
-</td>
-</tr>
-</table>
+<img src="./svg/radar.svg" alt="Developer DNA" width="415" />
+<img src="./svg/tech-stack.svg" alt="Tech Stack" width="415" />
 
 <br/>
 
