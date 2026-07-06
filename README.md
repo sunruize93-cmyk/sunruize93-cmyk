@@ -15,9 +15,4 @@
 <img src="./svg/header.svg" alt="Profile Header" width="840" />
 <img src="./svg/radar.svg" alt="Developer DNA" width="415" />
 <img src="./svg/tech-stack.svg" alt="Tech Stack" width="415" />
-
-<br/><br/>
-
-<sub>🌌 数据每日自动更新 | Powered by GitHub Actions</sub>
-
 </div>
