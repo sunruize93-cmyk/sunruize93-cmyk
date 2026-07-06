@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="323" viewBox="0 0 840 323">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0e27"/><stop offset="100%" stop-color="#0d1537"/>
+    </linearGradient>
+    <linearGradient id="tG" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <style>
+    @keyframes fadeIn { 0% { opacity:0; } 100% { opacity:1; } }
+    @keyframes pulse { 0%,100% { opacity:0.4;r:3; } 50% { opacity:1;r:5; } }
+    @keyframes borderP { 0%,100% { stroke-opacity:0.15; } 50% { stroke-opacity:0.3; } }
+    .row { animation: fadeIn 0.5s ease-out both; }
+    .label { font-family:'Segoe UI',system-ui,sans-serif; font-size:13px; fill:#e0e6f0; }
+    .pct { font-family:'SFMono-Regular',Consolas,monospace; font-size:13px; font-weight:600; }
+    .track { fill:rgba(255,255,255,0.06); }
+    .dot { animation: pulse 2s ease-in-out infinite; opacity:0; }
+    .border { animation: borderP 4s ease-in-out infinite; }
+  </style>
+  <rect x="1" y="1" width="838" height="321" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="838" height="321" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
+  <text x="420" y="40" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="url(#tG)" filter="url(#glow)">⚡ TECH STACK</text>
+  
+    <g class="row" style="animation-delay:0.3s">
+      <text x="40" y="65" class="label">TypeScript</text>
+      <text x="790" y="65" text-anchor="end" class="pct" fill="#3178C6">69.6%</text>
+      <rect x="40" y="71" width="760" height="8" rx="4" class="track"/>
+      <rect x="40" y="71" width="529.2881386696749" height="8" rx="4" fill="#3178C6" opacity="0.85">
+        <animate attributeName="width" from="0" to="529.2881386696749" dur="1.2s" begin="0.3s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+      </rect>
+      <circle cx="569.2881386696749" cy="75" r="3" fill="#3178C6" class="dot" style="animation-delay:1.5s"/>
+    </g>
+    <g class="row" style="animation-delay:0.4s">
+      <text x="40" y="103" class="label">JavaScript</text>
+      <text x="790" y="103" text-anchor="end" class="pct" fill="#F7DF1E">19.9%</text>
+      <rect x="40" y="109" width="760" height="8" rx="4" class="track"/>
+      <rect x="40" y="109" width="150.8974618927788" height="8" rx="4" fill="#F7DF1E" opacity="0.85">
+        <animate attributeName="width" from="0" to="150.8974618927788" dur="1.2s" begin="0.4s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+      </rect>
+      <circle cx="190.8974618927788" cy="113" r="3" fill="#F7DF1E" class="dot" style="animation-delay:1.6s"/>
+    </g>
+    <g class="row" style="animation-delay:0.5s">
+      <text x="40" y="141" class="label">Python</text>
+      <text x="790" y="141" text-anchor="end" class="pct" fill="#3572A5">5.7%</text>
+      <rect x="40" y="147" width="760" height="8" rx="4" class="track"/>
+      <rect x="40" y="147" width="43.44801639111677" height="8" rx="4" fill="#3572A5" opacity="0.85">
+        <animate attributeName="width" from="0" to="43.44801639111677" dur="1.2s" begin="0.5s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+      </rect>
+      <circle cx="83.44801639111677" cy="151" r="3" fill="#3572A5" class="dot" style="animation-delay:1.7s"/>
+    </g>
+    <g class="row" style="animation-delay:0.6000000000000001s">
+      <text x="40" y="179" class="label">PLpgSQL</text>
+      <text x="790" y="179" text-anchor="end" class="pct" fill="#336791">3.8%</text>
+      <rect x="40" y="185" width="760" height="8" rx="4" class="track"/>
+      <rect x="40" y="185" width="29.223633398681056" height="8" rx="4" fill="#336791" opacity="0.85">
+        <animate attributeName="width" from="0" to="29.223633398681056" dur="1.2s" begin="0.6000000000000001s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+      </rect>
+      <circle cx="69.22363339868106" cy="189" r="3" fill="#336791" class="dot" style="animation-delay:1.8s"/>
+    </g>
+    <g class="row" style="animation-delay:0.7s">
+      <text x="40" y="217" class="label">CSS</text>
+      <text x="790" y="217" text-anchor="end" class="pct" fill="#563D7C">0.7%</text>
+      <rect x="40" y="223" width="760" height="8" rx="4" class="track"/>
+      <rect x="40" y="223" width="5.310133645960838" height="8" rx="4" fill="#563D7C" opacity="0.85">
+        <animate attributeName="width" from="0" to="5.310133645960838" dur="1.2s" begin="0.7s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+      </rect>
+      <circle cx="45.31013364596084" cy="227" r="3" fill="#563D7C" class="dot" style="animation-delay:1.9s"/>
+    </g>
+    <g class="row" style="animation-delay:0.8s">
+      <text x="40" y="255" class="label">HTML</text>
+      <text x="790" y="255" text-anchor="end" class="pct" fill="#E34F26">0.2%</text>
+      <rect x="40" y="261" width="760" height="8" rx="4" class="track"/>
+      <rect x="40" y="261" width="1.8326160017875368" height="8" rx="4" fill="#E34F26" opacity="0.85">
+        <animate attributeName="width" from="0" to="1.8326160017875368" dur="1.2s" begin="0.8s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+      </rect>
+      <circle cx="41.832616001787535" cy="265" r="3" fill="#E34F26" class="dot" style="animation-delay:2.0s"/>
+    </g>
+</svg>

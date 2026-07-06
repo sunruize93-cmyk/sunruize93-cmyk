@@ -1,0 +1,482 @@
+#!/usr/bin/env python3
+"""
+GitHub Profile Scoreboard Generator
+Fetches real GitHub data and generates dynamic SVG cards.
+"""
+
+import json
+import math
+import os
+import urllib.request
+import urllib.error
+from datetime import datetime, timezone
+
+GITHUB_USERNAME = "sunruize93-cmyk"
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "svg")
+
+# === Color Palette ===
+COLORS = {
+    "bg_start": "#0a0e27",
+    "bg_end": "#0d1537",
+    "cyan": "#00d4ff",
+    "purple": "#7c3aed",
+    "text": "#e0e6f0",
+    "muted": "#8892b0",
+    "border": "rgba(0,212,255,0.15)",
+    "track": "rgba(255,255,255,0.06)",
+}
+
+LANG_COLORS = {
+    "TypeScript": "#3178C6",
+    "JavaScript": "#F7DF1E",
+    "Python": "#3572A5",
+    "CSS": "#563D7C",
+    "HTML": "#E34F26",
+    "PLpgSQL": "#336791",
+    "Go": "#00ADD8",
+    "Rust": "#DEA584",
+    "Java": "#B07219",
+    "C++": "#F34B7D",
+    "C": "#555555",
+    "Shell": "#89E051",
+    "Ruby": "#701516",
+    "PHP": "#4F5D95",
+    "Swift": "#F05138",
+    "Kotlin": "#A97BFF",
+    "Dart": "#00B4AB",
+    "Vue": "#41B883",
+    "Dockerfile": "#384D54",
+}
+
+# ─────────────────────────────────────────────
+#  GitHub API helpers
+# ─────────────────────────────────────────────
+
+def gh_api(path: str):
+    url = f"https://api.github.com/{path}"
+    req = urllib.request.Request(url)
+    req.add_header("Accept", "application/vnd.github+json")
+    req.add_header("User-Agent", "github-profile-scoreboard")
+    if GITHUB_TOKEN:
+        req.add_header("Authorization", f"Bearer {GITHUB_TOKEN}")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        print(f"  ⚠ API error {e.code} for {path}")
+        return None
+
+
+def gh_api_paginated(path: str, per_page: int = 100):
+    results = []
+    page = 1
+    while True:
+        sep = "&" if "?" in path else "?"
+        data = gh_api(f"{path}{sep}per_page={per_page}&page={page}")
+        if not data:
+            break
+        results.extend(data)
+        if len(data) < per_page:
+            break
+        page += 1
+    return results
+
+
+def fetch_data():
+    print("📡 Fetching GitHub data...")
+    user = gh_api(f"users/{GITHUB_USERNAME}") or {}
+    repos = gh_api_paginated(f"users/{GITHUB_USERNAME}/repos?type=owner&sort=updated") or []
+    # Filter out the profile repo
+    repos = [r for r in repos if r.get("name") != GITHUB_USERNAME]
+
+    # ── Stars & Forks ──
+    total_stars = sum(r.get("stargazers_count", 0) for r in repos)
+    total_forks = sum(r.get("forks_count", 0) for r in repos)
+
+    # ── Languages ──
+    lang_bytes = {}
+    for r in repos:
+        langs = gh_api(f"repos/{GITHUB_USERNAME}/{r['name']}/languages") or {}
+        for lang, b in langs.items():
+            lang_bytes[lang] = lang_bytes.get(lang, 0) + b
+    total_bytes = sum(lang_bytes.values()) or 1
+    lang_pcts = sorted(
+        [(lang, b / total_bytes * 100) for lang, b in lang_bytes.items()],
+        key=lambda x: -x[1],
+    )
+
+    # ── Commits (across all repos) ──
+    total_commits = 0
+    for r in repos:
+        contributors = gh_api(f"repos/{GITHUB_USERNAME}/{r['name']}/contributors")
+        if contributors:
+            for c in contributors:
+                if c.get("login", "").lower() == GITHUB_USERNAME.lower():
+                    total_commits += c.get("contributions", 0)
+
+    # ── Issues & PRs ──
+    total_prs = 0
+    total_issues = 0
+    search_prs = gh_api(f"search/issues?q=author:{GITHUB_USERNAME}+type:pr&per_page=1")
+    if search_prs:
+        total_prs = search_prs.get("total_count", 0)
+    search_issues = gh_api(f"search/issues?q=author:{GITHUB_USERNAME}+type:issue&per_page=1")
+    if search_issues:
+        total_issues = search_issues.get("total_count", 0)
+
+    # ── Account age in days ──
+    created = user.get("created_at", "2025-01-01T00:00:00Z")
+    created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+    account_age_days = max((datetime.now(timezone.utc) - created_dt).days, 1)
+
+    data = {
+        "name": user.get("name") or GITHUB_USERNAME,
+        "bio": user.get("bio") or "",
+        "repos_count": len(repos),
+        "total_stars": total_stars,
+        "total_forks": total_forks,
+        "total_commits": total_commits,
+        "total_prs": total_prs,
+        "total_issues": total_issues,
+        "followers": user.get("followers", 0),
+        "following": user.get("following", 0),
+        "lang_pcts": lang_pcts[:8],  # top 8 languages
+        "account_age_days": account_age_days,
+    }
+
+    print(f"  ✅ {data['name']} | {data['total_commits']} commits | {data['total_stars']} stars | {data['repos_count']} repos")
+    print(f"  ✅ Top languages: {', '.join(l[0] for l in data['lang_pcts'][:5])}")
+    return data
+
+
+# ─────────────────────────────────────────────
+#  Radar chart score calculation
+# ─────────────────────────────────────────────
+
+def calculate_radar_scores(data):
+    """Derive 6 dimension scores from GitHub activity."""
+    commits = data["total_commits"]
+    stars = data["total_stars"]
+    repos = data["repos_count"]
+    prs = data["total_prs"]
+    issues = data["total_issues"]
+    langs = data["lang_pcts"]
+    age_days = data["account_age_days"]
+
+    lang_names = [l[0] for l in langs]
+    lang_pct_map = {l[0]: l[1] for l in langs}
+
+    # 1. Frontend: presence of JS/TS/CSS/HTML/Vue
+    frontend_langs = {"JavaScript", "TypeScript", "CSS", "HTML", "Vue"}
+    fe_score = min(sum(lang_pct_map.get(l, 0) for l in frontend_langs) * 1.2, 100)
+
+    # 2. Backend: presence of Python/Go/Java/Rust/PLpgSQL/Ruby/PHP
+    backend_langs = {"Python", "Go", "Java", "Rust", "PLpgSQL", "Ruby", "PHP", "C", "C++"}
+    be_score = min(sum(lang_pct_map.get(l, 0) for l in backend_langs) * 1.2, 100)
+
+    # 3. Productivity: commits per day normalized
+    commits_per_day = commits / age_days
+    prod_score = min(commits_per_day * 100, 100)  # 1 commit/day = 100
+
+    # 4. Impact: stars + forks
+    impact_raw = stars * 10 + data["total_forks"] * 15
+    impact_score = min(impact_raw, 100)
+
+    # 5. Collaboration: PRs + issues
+    collab_raw = prs * 5 + issues * 5
+    collab_score = min(collab_raw, 100)
+
+    # 6. Breadth: language diversity + repo count
+    breadth_raw = len(langs) * 10 + repos * 5
+    breadth_score = min(breadth_raw, 100)
+
+    scores = [
+        ("Frontend", round(max(fe_score, 15))),
+        ("Backend", round(max(be_score, 15))),
+        ("Productivity", round(max(prod_score, 15))),
+        ("Impact", round(max(impact_score, 15))),
+        ("Collaboration", round(max(collab_score, 15))),
+        ("Breadth", round(max(breadth_score, 15))),
+    ]
+    return scores
+
+
+# ─────────────────────────────────────────────
+#  SVG generators
+# ─────────────────────────────────────────────
+
+def fmt_num(n):
+    if n >= 10000:
+        return f"{n/1000:.1f}K"
+    if n >= 1000:
+        return f"{n/1000:.1f}K"
+    return str(n)
+
+
+def gen_header(data):
+    """Generate the compact header card with contact info and key stats."""
+    name = data["name"]
+    bio = data["bio"]
+    stars = fmt_num(data["total_stars"])
+    commits = fmt_num(data["total_commits"])
+    repos = data["repos_count"]
+    prs = fmt_num(data["total_prs"])
+
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="840" height="220" viewBox="0 0 840 220">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0e27"/><stop offset="100%" stop-color="#0d1537"/>
+    </linearGradient>
+    <linearGradient id="titleG" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="divG" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="transparent"/><stop offset="50%" stop-color="#00d4ff"/><stop offset="100%" stop-color="transparent"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glow2"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <style>
+    @keyframes fadeIn {{ 0% {{ opacity:0; transform:translateY(10px); }} 100% {{ opacity:1; transform:translateY(0); }} }}
+    @keyframes twinkle {{ 0%,100% {{ opacity:0.15; }} 50% {{ opacity:0.6; }} }}
+    @keyframes borderP {{ 0%,100% {{ stroke-opacity:0.15; }} 50% {{ stroke-opacity:0.35; }} }}
+    @keyframes pulse {{ 0%,100% {{ opacity:0.7; }} 50% {{ opacity:1; }} }}
+    .fi {{ animation: fadeIn 0.5s ease-out both; }}
+    .border {{ animation: borderP 4s ease-in-out infinite; }}
+    .star {{ animation: twinkle 3s ease-in-out infinite; }}
+  </style>
+
+  <rect x="1" y="1" width="838" height="218" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="838" height="218" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
+
+  <!-- Stars -->
+  <circle cx="80" cy="30" r="1" fill="#00d4ff" class="star"/><circle cx="200" cy="20" r="0.8" fill="#7c3aed" class="star" style="animation-delay:1s"/>
+  <circle cx="640" cy="25" r="1.1" fill="#00d4ff" class="star" style="animation-delay:0.5s"/><circle cx="760" cy="35" r="0.7" fill="#a855f7" class="star" style="animation-delay:2s"/>
+  <circle cx="400" cy="15" r="0.9" fill="#00d4ff" class="star" style="animation-delay:1.5s"/>
+  <circle cx="120" cy="195" r="0.8" fill="#7c3aed" class="star" style="animation-delay:0.8s"/><circle cx="720" cy="190" r="1" fill="#00d4ff" class="star" style="animation-delay:2.2s"/>
+
+  <!-- Name & Bio -->
+  <text x="420" y="52" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="32" font-weight="800" fill="url(#titleG)" filter="url(#glow2)" letter-spacing="2" class="fi">{name}</text>
+  <text x="420" y="76" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="14" fill="#8892b0" class="fi" style="animation-delay:0.1s">{bio}</text>
+
+  <line x1="200" y1="92" x2="640" y2="92" stroke="url(#divG)" stroke-width="1"/>
+
+  <!-- Contact pills -->
+  <g class="fi" style="animation-delay:0.2s">
+    <rect x="195" y="100" width="200" height="28" rx="14" fill="rgba(0,212,255,0.06)" stroke="rgba(0,212,255,0.15)" stroke-width="1"/>
+    <text x="230" y="119" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="12" fill="#00d4ff">🔗</text>
+    <text x="248" y="119" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="12" fill="#e0e6f0">LinkedIn</text>
+  </g>
+  <g class="fi" style="animation-delay:0.3s">
+    <rect x="415" y="100" width="230" height="28" rx="14" fill="rgba(124,58,237,0.06)" stroke="rgba(124,58,237,0.15)" stroke-width="1"/>
+    <text x="450" y="119" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="12" fill="#7c3aed">✉️</text>
+    <text x="470" y="119" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="12" fill="#e0e6f0">support@nestlinker.com</text>
+  </g>
+
+  <!-- Stats row -->
+  <g class="fi" style="animation-delay:0.35s">
+    <rect x="90" y="146" width="130" height="56" rx="10" fill="rgba(255,215,0,0.04)" stroke="rgba(255,215,0,0.1)" stroke-width="1"/>
+    <text x="155" y="169" text-anchor="middle" font-family="\'SFMono-Regular\',Consolas,monospace" font-size="20" font-weight="700" fill="#FFD700" filter="url(#glow)">{stars}</text>
+    <text x="155" y="189" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">⭐ STARS</text>
+  </g>
+  <g class="fi" style="animation-delay:0.45s">
+    <rect x="240" y="146" width="130" height="56" rx="10" fill="rgba(0,255,136,0.04)" stroke="rgba(0,255,136,0.1)" stroke-width="1"/>
+    <text x="305" y="169" text-anchor="middle" font-family="\'SFMono-Regular\',Consolas,monospace" font-size="20" font-weight="700" fill="#00ff88" filter="url(#glow)">{commits}</text>
+    <text x="305" y="189" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">🔥 COMMITS</text>
+  </g>
+  <g class="fi" style="animation-delay:0.55s">
+    <rect x="390" y="146" width="130" height="56" rx="10" fill="rgba(124,58,237,0.04)" stroke="rgba(124,58,237,0.1)" stroke-width="1"/>
+    <text x="455" y="169" text-anchor="middle" font-family="\'SFMono-Regular\',Consolas,monospace" font-size="20" font-weight="700" fill="#7c3aed" filter="url(#glow)">{prs}</text>
+    <text x="455" y="189" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">🔀 PRs</text>
+  </g>
+  <g class="fi" style="animation-delay:0.65s">
+    <rect x="540" y="146" width="130" height="56" rx="10" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+    <text x="605" y="169" text-anchor="middle" font-family="\'SFMono-Regular\',Consolas,monospace" font-size="20" font-weight="700" fill="#00d4ff" filter="url(#glow)">{repos}</text>
+    <text x="605" y="189" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">📦 REPOS</text>
+  </g>
+</svg>'''
+
+
+def gen_tech_stack(data):
+    """Generate tech stack bars from real language data."""
+    langs = data["lang_pcts"]
+    if not langs:
+        return ""
+    
+    row_height = 38
+    top_pad = 65
+    card_h = top_pad + len(langs) * row_height + 30
+    bar_w = 760
+
+    rows_svg = ""
+    for i, (lang, pct) in enumerate(langs):
+        y = top_pad + i * row_height
+        fill_w = pct / 100 * bar_w
+        color = LANG_COLORS.get(lang, "#888888")
+        delay = 0.3 + i * 0.1
+        rows_svg += f'''
+    <g class="row" style="animation-delay:{delay}s">
+      <text x="40" y="{y}" class="label">{lang}</text>
+      <text x="790" y="{y}" text-anchor="end" class="pct" fill="{color}">{pct:.1f}%</text>
+      <rect x="40" y="{y+6}" width="{bar_w}" height="8" rx="4" class="track"/>
+      <rect x="40" y="{y+6}" width="{fill_w}" height="8" rx="4" fill="{color}" opacity="0.85">
+        <animate attributeName="width" from="0" to="{fill_w}" dur="1.2s" begin="{delay}s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+      </rect>
+      <circle cx="{40+fill_w}" cy="{y+10}" r="3" fill="{color}" class="dot" style="animation-delay:{delay+1.2}s"/>
+    </g>'''
+
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="840" height="{card_h}" viewBox="0 0 840 {card_h}">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0e27"/><stop offset="100%" stop-color="#0d1537"/>
+    </linearGradient>
+    <linearGradient id="tG" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <style>
+    @keyframes fadeIn {{ 0% {{ opacity:0; }} 100% {{ opacity:1; }} }}
+    @keyframes pulse {{ 0%,100% {{ opacity:0.4;r:3; }} 50% {{ opacity:1;r:5; }} }}
+    @keyframes borderP {{ 0%,100% {{ stroke-opacity:0.15; }} 50% {{ stroke-opacity:0.3; }} }}
+    .row {{ animation: fadeIn 0.5s ease-out both; }}
+    .label {{ font-family:\'Segoe UI\',system-ui,sans-serif; font-size:13px; fill:#e0e6f0; }}
+    .pct {{ font-family:\'SFMono-Regular\',Consolas,monospace; font-size:13px; font-weight:600; }}
+    .track {{ fill:rgba(255,255,255,0.06); }}
+    .dot {{ animation: pulse 2s ease-in-out infinite; opacity:0; }}
+    .border {{ animation: borderP 4s ease-in-out infinite; }}
+  </style>
+  <rect x="1" y="1" width="838" height="{card_h-2}" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="838" height="{card_h-2}" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
+  <text x="420" y="40" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="url(#tG)" filter="url(#glow)">⚡ TECH STACK</text>
+  {rows_svg}
+</svg>'''
+
+
+def gen_radar(data):
+    """Generate hexagonal radar chart from calculated scores."""
+    scores = calculate_radar_scores(data)
+    cx, cy = 240, 215
+    R = 130
+
+    # Hexagon vertex calculator (starts at top, clockwise)
+    def hex_point(i, scale=1.0):
+        angle = math.radians(-90 + i * 60)
+        return (cx + R * scale * math.cos(angle), cy + R * scale * math.sin(angle))
+
+    # Grid hexagons
+    grids = ""
+    for pct in [0.25, 0.5, 0.75, 1.0]:
+        pts = " ".join(f"{hex_point(i, pct)[0]:.1f},{hex_point(i, pct)[1]:.1f}" for i in range(6))
+        grids += f'  <polygon points="{pts}" class="grid"/>\n'
+
+    # Axis lines
+    axes = ""
+    for i in range(6):
+        px, py = hex_point(i)
+        axes += f'  <line x1="{cx}" y1="{cy}" x2="{px:.1f}" y2="{py:.1f}" class="axis"/>\n'
+
+    # Data polygon
+    data_pts = []
+    for i, (_, val) in enumerate(scores):
+        scale = val / 100
+        px, py = hex_point(i, scale)
+        data_pts.append((px, py))
+    poly_str = " ".join(f"{p[0]:.1f},{p[1]:.1f}" for p in data_pts)
+
+    # Vertex dots
+    dots = ""
+    for i, (px, py) in enumerate(data_pts):
+        dots += f'  <circle cx="{px:.1f}" cy="{py:.1f}" r="4" fill="#00d4ff" class="vertex" filter="url(#dg)" style="animation-delay:{i*0.3}s"/>\n'
+
+    # Labels
+    labels = ""
+    for i, (name, val) in enumerate(scores):
+        lx, ly = hex_point(i, 1.22)
+        anchor = "middle"
+        if i == 1 or i == 2:
+            anchor = "start"
+        elif i == 4 or i == 5:
+            anchor = "end"
+        labels += f'  <text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" class="lbl" style="animation-delay:{0.5+i*0.1}s">{name}</text>\n'
+        labels += f'  <text x="{lx:.1f}" y="{ly+14:.1f}" text-anchor="{anchor}" class="score" style="animation-delay:{0.6+i*0.1}s">{val}</text>\n'
+
+    avg = sum(v for _, v in scores) / len(scores)
+
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="480" height="470" viewBox="0 0 480 470">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0e27"/><stop offset="100%" stop-color="#0d1537"/>
+    </linearGradient>
+    <linearGradient id="sG" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="pg"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="dg"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <style>
+    @keyframes drawP {{ 0% {{ stroke-dashoffset:800; }} 100% {{ stroke-dashoffset:0; }} }}
+    @keyframes fadeIn {{ 0% {{ opacity:0; }} 100% {{ opacity:1; }} }}
+    @keyframes pulse {{ 0%,100% {{ opacity:0.6;r:4; }} 50% {{ opacity:1;r:6; }} }}
+    @keyframes fillF {{ 0% {{ fill-opacity:0; }} 100% {{ fill-opacity:0.15; }} }}
+    @keyframes borderP {{ 0%,100% {{ stroke-opacity:0.15; }} 50% {{ stroke-opacity:0.3; }} }}
+    .grid {{ stroke:rgba(0,212,255,0.08); stroke-width:1; fill:none; }}
+    .axis {{ stroke:rgba(0,212,255,0.12); stroke-width:1; }}
+    .dpoly {{ fill:rgba(0,212,255,0.15); stroke:#00d4ff; stroke-width:2; stroke-dasharray:800; animation:drawP 2s ease-out 0.5s both; }}
+    .dfill {{ fill:rgba(0,212,255,0.15); stroke:none; animation:fillF 1s ease-out 2s both; fill-opacity:0; }}
+    .vertex {{ animation: pulse 2.5s ease-in-out infinite; }}
+    .lbl {{ font-family:\'Segoe UI\',system-ui,sans-serif; font-size:12px; fill:#e0e6f0; animation:fadeIn 0.5s ease-out both; }}
+    .score {{ font-family:\'SFMono-Regular\',Consolas,monospace; font-size:11px; fill:#00d4ff; font-weight:600; animation:fadeIn 0.5s ease-out both; }}
+    .border {{ animation: borderP 4s ease-in-out infinite; }}
+  </style>
+
+  <rect x="1" y="1" width="478" height="468" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="478" height="468" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
+
+  <text x="240" y="40" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="url(#sG)" filter="url(#glow)">🧬 DEVELOPER DNA</text>
+
+{grids}
+{axes}
+  <polygon points="{poly_str}" class="dfill"/>
+  <polygon points="{poly_str}" class="dpoly" filter="url(#pg)"/>
+{dots}
+{labels}
+
+  <line x1="120" y1="420" x2="360" y2="420" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
+  <text x="240" y="445" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="11" fill="#8892b0" letter-spacing="2">OVERALL</text>
+  <text x="240" y="464" text-anchor="middle" font-family="\'SFMono-Regular\',Consolas,monospace" font-size="22" font-weight="700" fill="url(#sG)" filter="url(#glow)">{avg:.1f} / 100</text>
+</svg>'''
+
+
+# ─────────────────────────────────────────────
+#  Main
+# ─────────────────────────────────────────────
+
+def main():
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    data = fetch_data()
+
+    cards = {
+        "header.svg": gen_header(data),
+        "tech-stack.svg": gen_tech_stack(data),
+        "radar.svg": gen_radar(data),
+    }
+
+    for fname, svg in cards.items():
+        path = os.path.join(OUTPUT_DIR, fname)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(svg)
+        print(f"  📝 Generated {fname}")
+
+    # Write timestamp
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    with open(os.path.join(OUTPUT_DIR, ".last_updated"), "w") as f:
+        f.write(ts)
+
+    print(f"\n✅ All cards generated at {ts}")
+
+
+if __name__ == "__main__":
+    main()

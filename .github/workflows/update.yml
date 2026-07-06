@@ -1,0 +1,38 @@
+name: Update Scoreboard
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 每天 UTC 02:00 (北京时间 10:00) 自动运行
+  push:
+    branches: [main]
+  workflow_dispatch:        # 支持手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate SVG Cards
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python generate.py
+
+      - name: Commit & Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add svg/ -f
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "📊 Auto-update scoreboard $(date -u +%Y-%m-%d)"
+            git push
+          fi
