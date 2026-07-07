@@ -179,9 +179,8 @@ def calculate_radar_scores(data):
     commits_per_day = commits / age_days
     prod_score = min(commits_per_day * 100, 100)  # 1 commit/day = 100
 
-    # 4. Impact: stars + forks
-    impact_raw = stars * 10 + data["total_forks"] * 15
-    impact_score = min(impact_raw, 100)
+    # 4. Stars: capped at 100 (10 stars = full score)
+    stars_score = min(stars * 10, 100)
 
     # 5. Collaboration: PRs + issues
     collab_raw = prs * 5 + issues * 5
@@ -195,7 +194,7 @@ def calculate_radar_scores(data):
         ("Frontend", round(max(fe_score, 15))),
         ("Backend", round(max(be_score, 15))),
         ("Productivity", round(max(prod_score, 15))),
-        ("Impact", round(max(impact_score, 15))),
+        ("Stars", round(max(stars_score, 15))),
         ("Collaboration", round(max(collab_score, 15))),
         ("Breadth", round(max(breadth_score, 15))),
     ]
@@ -437,7 +436,6 @@ def main():
     data = fetch_data()
 
     cards = {
-        "header.svg": gen_header(data),
         "tech-stack.svg": gen_tech_stack(data),
         "radar.svg": gen_radar(data),
     }

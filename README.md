@@ -12,7 +12,6 @@
 
 <br/><br/>
 
-<img src="./svg/header.svg" alt="Profile Header" width="840" />
-<img src="./svg/radar.svg" alt="Developer DNA" width="415" />
-<img src="./svg/tech-stack.svg" alt="Tech Stack" width="415" />
+<img src="./svg/radar.svg" alt="Developer DNA" width="415" /><img src="./svg/tech-stack.svg" alt="Tech Stack" width="415" />
+
 </div>
