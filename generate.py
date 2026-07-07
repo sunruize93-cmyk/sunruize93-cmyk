@@ -154,49 +154,61 @@ def fetch_data():
 #  Radar chart score calculation
 # ─────────────────────────────────────────────
 
+def grade_from_avg(avg):
+    """Return letter grade based on average score."""
+    if avg >= 90: return "S"
+    if avg >= 80: return "A"
+    if avg >= 72: return "A-"
+    if avg >= 65: return "B+"
+    if avg >= 58: return "B"
+    if avg >= 50: return "B-"
+    if avg >= 42: return "C+"
+    if avg >= 35: return "C"
+    return "C-"
+
+
 def calculate_radar_scores(data):
-    """Derive 6 dimension scores from GitHub activity."""
+    """Derive 6 dimension scores from GitHub activity (realistic scale)."""
     commits = data["total_commits"]
-    stars = data["total_stars"]
-    repos = data["repos_count"]
-    prs = data["total_prs"]
-    issues = data["total_issues"]
-    langs = data["lang_pcts"]
+    stars   = data["total_stars"]
+    repos   = data["repos_count"]
+    prs     = data["total_prs"]
+    issues  = data["total_issues"]
+    langs   = data["lang_pcts"]
     age_days = data["account_age_days"]
 
-    lang_names = [l[0] for l in langs]
     lang_pct_map = {l[0]: l[1] for l in langs}
 
-    # 1. Frontend: presence of JS/TS/CSS/HTML/Vue
+    # 1. Frontend: TS/JS/CSS/HTML/Vue — realistic multiplier (80% coverage → ~72)
     frontend_langs = {"JavaScript", "TypeScript", "CSS", "HTML", "Vue"}
-    fe_score = min(sum(lang_pct_map.get(l, 0) for l in frontend_langs) * 1.2, 100)
+    fe_raw = sum(lang_pct_map.get(l, 0) for l in frontend_langs)
+    fe_score = min(fe_raw * 0.9, 100)
 
-    # 2. Backend: presence of Python/Go/Java/Rust/PLpgSQL/Ruby/PHP
-    backend_langs = {"Python", "Go", "Java", "Rust", "PLpgSQL", "Ruby", "PHP", "C", "C++"}
-    be_score = min(sum(lang_pct_map.get(l, 0) for l in backend_langs) * 1.2, 100)
+    # 2. Backend: Python/Go/etc — realistic (17% backend → ~20)
+    backend_langs = {"Python", "Go", "Java", "Rust", "PLpgSQL", "Ruby", "PHP", "C", "C++", "Shell"}
+    be_raw = sum(lang_pct_map.get(l, 0) for l in backend_langs)
+    be_score = min(be_raw * 1.2, 100)
 
-    # 3. Productivity: commits per day normalized
-    commits_per_day = commits / age_days
-    prod_score = min(commits_per_day * 100, 100)  # 1 commit/day = 100
+    # 3. Productivity: 1 commit/day → 80pts, 2/day → 100pts
+    commits_per_day = commits / max(age_days, 1)
+    prod_score = min(commits_per_day * 80, 100)
 
-    # 4. Stars: capped at 100 (10 stars = full score)
-    stars_score = min(stars * 10, 100)
+    # 4. Stars: 25 stars → 100pts (realistic for early-career)
+    stars_score = min(stars * 4, 100)
 
-    # 5. Collaboration: PRs + issues
-    collab_raw = prs * 5 + issues * 5
-    collab_score = min(collab_raw, 100)
+    # 5. Collaboration: PRs + issues (realistic, 1 PR ≈ 8pts)
+    collab_score = min(prs * 8 + issues * 3, 100)
 
-    # 6. Breadth: language diversity + repo count
-    breadth_raw = len(langs) * 10 + repos * 5
-    breadth_score = min(breadth_raw, 100)
+    # 6. Breadth: language diversity + repo count (realistic cap)
+    breadth_score = min(len(langs) * 6 + repos * 3, 100)
 
     scores = [
-        ("Frontend", round(max(fe_score, 15))),
-        ("Backend", round(max(be_score, 15))),
-        ("Productivity", round(max(prod_score, 15))),
-        ("Stars", round(max(stars_score, 15))),
-        ("Collaboration", round(max(collab_score, 15))),
-        ("Breadth", round(max(breadth_score, 15))),
+        ("Frontend",      round(max(fe_score,    10))),
+        ("Backend",       round(max(be_score,    10))),
+        ("Productivity",  round(max(prod_score,  10))),
+        ("Stars",         round(max(stars_score, 10))),
+        ("Collaboration", round(max(collab_score,10))),
+        ("Breadth",       round(max(breadth_score,10))),
     ]
     return scores
 
@@ -375,7 +387,8 @@ def gen_radar(data):
         labels += f'  <text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" class="lbl" style="animation-delay:{0.5+i*0.1}s">{name}</text>\n'
         labels += f'  <text x="{lx:.1f}" y="{ly+14:.1f}" text-anchor="{anchor}" class="score" style="animation-delay:{0.6+i*0.1}s">{val}</text>\n'
 
-    avg = sum(v for _, v in scores) / len(scores)
+    avg   = sum(v for _, v in scores) / len(scores)
+    grade = grade_from_avg(avg)
 
     return f'''<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480">
   <defs>
@@ -411,7 +424,7 @@ def gen_radar(data):
   <!-- B+ Grade Ring -->
   <circle cx="240" cy="62" r="28" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="5"/>
   <circle cx="240" cy="62" r="28" fill="none" stroke="url(#sG)" stroke-width="5" stroke-dasharray="176" stroke-dashoffset="35" stroke-linecap="round"/>
-  <text x="240" y="69" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="18" font-weight="800" fill="#ffffff" filter="url(#glow)">B+</text>
+  <text x="240" y="69" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="18" font-weight="800" fill="#ffffff" filter="url(#glow)">{grade}</text>
   <text x="240" y="105" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="10" font-weight="700" fill="#8892b0" letter-spacing="1">DEVELOPER RANK</text>
 
 {grids}
