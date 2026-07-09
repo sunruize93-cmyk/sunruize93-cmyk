@@ -193,8 +193,8 @@ def calculate_radar_scores(data):
     commits_per_day = commits / max(age_days, 1)
     prod_score = min(commits_per_day * 80, 100)
 
-    # 4. Stars: 25 stars → 100pts (realistic for early-career)
-    stars_score = min(stars * 4, 100)
+    # 4. Stars: actual star count
+    stars_score = min(stars, 100)
 
     # 5. Collaboration: PRs + issues (realistic, 1 PR ≈ 8pts)
     collab_score = min(prs * 8 + issues * 3, 100)
