@@ -47,12 +47,12 @@
   <line x1="240" y1="245" x2="149.1" y2="297.5" class="axis"/>
   <line x1="240" y1="245" x2="149.1" y2="192.5" class="axis"/>
 
-  <polygon points="240.0,159.9 250.9,238.7 326.4,294.9 240.0,372.1 230.9,250.2 182.7,211.9" class="dfill"/>
-  <polygon points="240.0,159.9 250.9,238.7 326.4,294.9 240.0,372.1 230.9,250.2 182.7,211.9" class="dpoly" filter="url(#pg)"/>
+  <polygon points="240.0,159.9 250.9,238.7 326.4,294.9 240.0,350.0 230.9,250.2 182.7,211.9" class="dfill"/>
+  <polygon points="240.0,159.9 250.9,238.7 326.4,294.9 240.0,350.0 230.9,250.2 182.7,211.9" class="dpoly" filter="url(#pg)"/>
   <circle cx="240.0" cy="159.9" r="4" fill="#00d4ff" class="vertex" filter="url(#dg)" style="animation-delay:0.0s"/>
   <circle cx="250.9" cy="238.7" r="4" fill="#00d4ff" class="vertex" filter="url(#dg)" style="animation-delay:0.3s"/>
   <circle cx="326.4" cy="294.9" r="4" fill="#00d4ff" class="vertex" filter="url(#dg)" style="animation-delay:0.6s"/>
-  <circle cx="240.0" cy="372.1" r="4" fill="#00d4ff" class="vertex" filter="url(#dg)" style="animation-delay:0.8999999999999999s"/>
+  <circle cx="240.0" cy="350.0" r="4" fill="#00d4ff" class="vertex" filter="url(#dg)" style="animation-delay:0.8999999999999999s"/>
   <circle cx="230.9" cy="250.2" r="4" fill="#00d4ff" class="vertex" filter="url(#dg)" style="animation-delay:1.2s"/>
   <circle cx="182.7" cy="211.9" r="4" fill="#00d4ff" class="vertex" filter="url(#dg)" style="animation-delay:1.5s"/>
 

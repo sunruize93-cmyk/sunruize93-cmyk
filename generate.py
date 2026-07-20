@@ -365,7 +365,7 @@ def gen_radar(data):
     # Data polygon
     data_pts = []
     for i, (_, val) in enumerate(scores):
-        scale = min(val / 100, 1.25)
+        scale = min(val / 100, 1.0)
         px, py = hex_point(i, scale)
         data_pts.append((px, py))
     poly_str = " ".join(f"{p[0]:.1f},{p[1]:.1f}" for p in data_pts)
