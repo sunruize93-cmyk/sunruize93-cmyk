@@ -193,8 +193,8 @@ def calculate_radar_scores(data):
     commits_per_day = commits / max(age_days, 1)
     prod_score = min(commits_per_day * 80, 100)
 
-    # 4. Stars: actual star count
-    stars_score = min(stars, 100)
+    # 4. Stars: actual star count (no cap)
+    stars_score = stars
 
     # 5. Collaboration: PRs + issues (realistic, 1 PR ≈ 8pts)
     collab_score = min(prs * 8 + issues * 3, 100)
@@ -365,7 +365,7 @@ def gen_radar(data):
     # Data polygon
     data_pts = []
     for i, (_, val) in enumerate(scores):
-        scale = val / 100
+        scale = min(val / 100, 1.25)
         px, py = hex_point(i, scale)
         data_pts.append((px, py))
     poly_str = " ".join(f"{p[0]:.1f},{p[1]:.1f}" for p in data_pts)
