@@ -63,7 +63,7 @@
   <text x="353.7" y="310.6" text-anchor="start" class="lbl" style="animation-delay:0.7s">Productivity</text>
   <text x="353.7" y="324.6" text-anchor="start" class="score" style="animation-delay:0.8s">10</text>
   <text x="240.0" y="376.2" text-anchor="middle" class="lbl" style="animation-delay:0.8s">Stars</text>
-  <text x="240.0" y="390.2" text-anchor="middle" class="score" style="animation-delay:0.9s">119</text>
+  <text x="240.0" y="390.2" text-anchor="middle" class="score" style="animation-delay:0.9s">125</text>
   <text x="126.3" y="310.6" text-anchor="end" class="lbl" style="animation-delay:0.9s">Collaboration</text>
   <text x="126.3" y="324.6" text-anchor="end" class="score" style="animation-delay:1.0s">10</text>
   <text x="126.3" y="179.4" text-anchor="end" class="lbl" style="animation-delay:1.0s">Breadth</text>
@@ -72,5 +72,5 @@
 
   <line x1="140" y1="415" x2="340" y2="415" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
   <text x="240" y="435" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="11" fill="#8892b0" letter-spacing="2">OVERALL</text>
-  <text x="240" y="456" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="22" font-weight="700" fill="url(#sG)" filter="url(#glow)">45.3 / 100</text>
+  <text x="240" y="456" text-anchor="middle" font-family="'SFMono-Regular',Consolas,monospace" font-size="22" font-weight="700" fill="url(#sG)" filter="url(#glow)">46.3 / 100</text>
 </svg>
