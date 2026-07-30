@@ -25,47 +25,47 @@
   
     <g class="row" style="animation-delay:0.3s">
       <text x="50" y="75" class="label">TypeScript</text>
-      <text x="430" y="75" text-anchor="end" class="pct" fill="#3178C6">64.2%</text>
+      <text x="430" y="75" text-anchor="end" class="pct" fill="#3178C6">65.1%</text>
       <rect x="50" y="81" width="380" height="8" rx="4" class="track"/>
-      <rect x="50" y="81" width="244.1107324762047" height="8" rx="4" fill="#3178C6" opacity="0.85">
-        <animate attributeName="width" from="0" to="244.1107324762047" dur="1.2s" begin="0.3s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+      <rect x="50" y="81" width="247.51685983367074" height="8" rx="4" fill="#3178C6" opacity="0.85">
+        <animate attributeName="width" from="0" to="247.51685983367074" dur="1.2s" begin="0.3s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
       </rect>
-      <circle cx="294.1107324762047" cy="85" r="3" fill="#3178C6" class="dot" style="animation-delay:1.5s"/>
+      <circle cx="297.51685983367076" cy="85" r="3" fill="#3178C6" class="dot" style="animation-delay:1.5s"/>
     </g>
     <g class="row" style="animation-delay:0.4s">
       <text x="50" y="117" class="label">CSS</text>
-      <text x="430" y="117" text-anchor="end" class="pct" fill="#563D7C">23.2%</text>
+      <text x="430" y="117" text-anchor="end" class="pct" fill="#563D7C">23.4%</text>
       <rect x="50" y="123" width="380" height="8" rx="4" class="track"/>
-      <rect x="50" y="123" width="88.323635597444" height="8" rx="4" fill="#563D7C" opacity="0.85">
-        <animate attributeName="width" from="0" to="88.323635597444" dur="1.2s" begin="0.4s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+      <rect x="50" y="123" width="89.04521280664093" height="8" rx="4" fill="#563D7C" opacity="0.85">
+        <animate attributeName="width" from="0" to="89.04521280664093" dur="1.2s" begin="0.4s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
       </rect>
-      <circle cx="138.323635597444" cy="127" r="3" fill="#563D7C" class="dot" style="animation-delay:1.6s"/>
+      <circle cx="139.04521280664093" cy="127" r="3" fill="#563D7C" class="dot" style="animation-delay:1.6s"/>
     </g>
     <g class="row" style="animation-delay:0.5s">
       <text x="50" y="159" class="label">JavaScript</text>
-      <text x="430" y="159" text-anchor="end" class="pct" fill="#F7DF1E">9.6%</text>
+      <text x="430" y="159" text-anchor="end" class="pct" fill="#F7DF1E">8.5%</text>
       <rect x="50" y="165" width="380" height="8" rx="4" class="track"/>
-      <rect x="50" y="165" width="36.64532624507178" height="8" rx="4" fill="#F7DF1E" opacity="0.85">
-        <animate attributeName="width" from="0" to="36.64532624507178" dur="1.2s" begin="0.5s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+      <rect x="50" y="165" width="32.44426541299326" height="8" rx="4" fill="#F7DF1E" opacity="0.85">
+        <animate attributeName="width" from="0" to="32.44426541299326" dur="1.2s" begin="0.5s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
       </rect>
-      <circle cx="86.64532624507177" cy="169" r="3" fill="#F7DF1E" class="dot" style="animation-delay:1.7s"/>
+      <circle cx="82.44426541299326" cy="169" r="3" fill="#F7DF1E" class="dot" style="animation-delay:1.7s"/>
     </g>
     <g class="row" style="animation-delay:0.6000000000000001s">
       <text x="50" y="201" class="label">Python</text>
-      <text x="430" y="201" text-anchor="end" class="pct" fill="#3572A5">2.8%</text>
+      <text x="430" y="201" text-anchor="end" class="pct" fill="#3572A5">2.9%</text>
       <rect x="50" y="207" width="380" height="8" rx="4" class="track"/>
-      <rect x="50" y="207" width="10.793661084390562" height="8" rx="4" fill="#3572A5" opacity="0.85">
-        <animate attributeName="width" from="0" to="10.793661084390562" dur="1.2s" begin="0.6000000000000001s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+      <rect x="50" y="207" width="10.866166625024857" height="8" rx="4" fill="#3572A5" opacity="0.85">
+        <animate attributeName="width" from="0" to="10.866166625024857" dur="1.2s" begin="0.6000000000000001s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
       </rect>
-      <circle cx="60.793661084390564" cy="211" r="3" fill="#3572A5" class="dot" style="animation-delay:1.8s"/>
+      <circle cx="60.86616662502486" cy="211" r="3" fill="#3572A5" class="dot" style="animation-delay:1.8s"/>
     </g>
     <g class="row" style="animation-delay:0.7s">
       <text x="50" y="243" class="label">HTML</text>
       <text x="430" y="243" text-anchor="end" class="pct" fill="#E34F26">0.0%</text>
       <rect x="50" y="249" width="380" height="8" rx="4" class="track"/>
-      <rect x="50" y="249" width="0.1266445968888907" height="8" rx="4" fill="#E34F26" opacity="0.85">
-        <animate attributeName="width" from="0" to="0.1266445968888907" dur="1.2s" begin="0.7s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
+      <rect x="50" y="249" width="0.12749532167022745" height="8" rx="4" fill="#E34F26" opacity="0.85">
+        <animate attributeName="width" from="0" to="0.12749532167022745" dur="1.2s" begin="0.7s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
       </rect>
-      <circle cx="50.12664459688889" cy="253" r="3" fill="#E34F26" class="dot" style="animation-delay:1.9s"/>
+      <circle cx="50.127495321670224" cy="253" r="3" fill="#E34F26" class="dot" style="animation-delay:1.9s"/>
     </g>
 </svg>
