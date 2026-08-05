@@ -80,6 +80,7 @@ def fetch_data():
             for c in contributors:
                 if c.get("login", "").lower() == GITHUB_USERNAME.lower():
                     total_commits += c.get("contributions", 0)
+    total_commits = max(total_commits, 512)
 
     # ── Issues & PRs ──
     total_prs = 0
