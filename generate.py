@@ -49,6 +49,34 @@ def gh_api_paginated(path: str, per_page: int = 100):
     return results
 
 
+def fetch_contributions_graphql():
+    if not GITHUB_TOKEN:
+        return 0
+    query = """
+    query($userName: String!) {
+      user(login: $userName) {
+        contributionsCollection {
+          contributionCalendar {
+            totalContributions
+          }
+        }
+      }
+    }
+    """
+    url = "https://api.github.com/graphql"
+    req_data = json.dumps({"query": query, "variables": {"userName": GITHUB_USERNAME}}).encode("utf-8")
+    req = urllib.request.Request(url, data=req_data)
+    req.add_header("Authorization", f"Bearer {GITHUB_TOKEN}")
+    req.add_header("User-Agent", "github-profile-scoreboard")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            res = json.loads(resp.read().decode())
+            return res["data"]["user"]["contributionsCollection"]["contributionCalendar"]["totalContributions"]
+    except Exception as e:
+        print(f"  ⚠ GraphQL API error: {e}")
+        return 0
+
+
 def fetch_data():
     print("📡 Fetching GitHub data...")
     user = gh_api(f"users/{GITHUB_USERNAME}") or {}
@@ -80,7 +108,9 @@ def fetch_data():
             for c in contributors:
                 if c.get("login", "").lower() == GITHUB_USERNAME.lower():
                     total_commits += c.get("contributions", 0)
-    total_commits = max(total_commits, 512)
+    
+    graphql_commits = fetch_contributions_graphql()
+    total_commits = max(graphql_commits, total_commits, 543)
 
     # ── Issues & PRs ──
     total_prs = 0
