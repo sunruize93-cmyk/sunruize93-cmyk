@@ -12,6 +12,6 @@
 
 <br/><br/>
 
-<img src="./svg/radar.svg" alt="Developer DNA" width="415" /><img src="./svg/tech-stack.svg" alt="Tech Stack" width="415" />
+<img src="./svg/github-stats.svg" alt="GitHub Stats" width="495" />
 
 </div>

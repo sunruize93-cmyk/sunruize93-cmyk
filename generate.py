@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 GitHub Profile Scoreboard Generator
-Fetches real GitHub data and generates dynamic SVG cards.
+Fetches real GitHub data and generates a dynamic GitHub Stats card.
 """
 
 import json
@@ -14,40 +14,6 @@ from datetime import datetime, timezone
 GITHUB_USERNAME = "sunruize93-cmyk"
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "svg")
-
-# === Color Palette ===
-COLORS = {
-    "bg_start": "#0a0e27",
-    "bg_end": "#0d1537",
-    "cyan": "#00d4ff",
-    "purple": "#7c3aed",
-    "text": "#e0e6f0",
-    "muted": "#8892b0",
-    "border": "rgba(0,212,255,0.15)",
-    "track": "rgba(255,255,255,0.06)",
-}
-
-LANG_COLORS = {
-    "TypeScript": "#3178C6",
-    "JavaScript": "#F7DF1E",
-    "Python": "#3572A5",
-    "CSS": "#563D7C",
-    "HTML": "#E34F26",
-    "PLpgSQL": "#336791",
-    "Go": "#00ADD8",
-    "Rust": "#DEA584",
-    "Java": "#B07219",
-    "C++": "#F34B7D",
-    "C": "#555555",
-    "Shell": "#89E051",
-    "Ruby": "#701516",
-    "PHP": "#4F5D95",
-    "Swift": "#F05138",
-    "Kotlin": "#A97BFF",
-    "Dart": "#00B4AB",
-    "Vue": "#41B883",
-    "Dockerfile": "#384D54",
-}
 
 # ─────────────────────────────────────────────
 #  GitHub API helpers
@@ -146,297 +112,141 @@ def fetch_data():
     }
 
     print(f"  ✅ {data['name']} | {data['total_commits']} commits | {data['total_stars']} stars | {data['repos_count']} repos")
-    print(f"  ✅ Top languages: {', '.join(l[0] for l in data['lang_pcts'][:5])}")
     return data
 
 
 # ─────────────────────────────────────────────
-#  Radar chart score calculation
+#  Grade calculation
 # ─────────────────────────────────────────────
 
-def grade_from_avg(avg):
-    """Return letter grade based on average score."""
-    if avg >= 90: return "S"
-    if avg >= 80: return "A"
-    if avg >= 72: return "A-"
-    if avg >= 65: return "B+"
-    if avg >= 58: return "B"
-    if avg >= 50: return "B-"
-    if avg >= 42: return "C+"
-    if avg >= 35: return "C"
-    return "C-"
-
-
-def calculate_radar_scores(data):
-    """Derive 6 dimension scores from GitHub activity (realistic scale)."""
+def calculate_grade(data):
     commits = data["total_commits"]
-    stars   = data["total_stars"]
-    repos   = data["repos_count"]
-    prs     = data["total_prs"]
-    issues  = data["total_issues"]
-    langs   = data["lang_pcts"]
-    age_days = data["account_age_days"]
+    stars = data["total_stars"]
+    prs = data["total_prs"]
+    issues = data["total_issues"]
+    repos = data["repos_count"]
 
-    lang_pct_map = {l[0]: l[1] for l in langs}
+    # Calculate weighted score (realistic calibration for B+/A- range)
+    score = commits * 0.2 + stars * 1.2 + prs * 6.0 + issues * 2.0 + repos * 3.0
 
-    # 1. Frontend: TS/JS/CSS/HTML/Vue — realistic multiplier (80% coverage → ~72)
-    frontend_langs = {"JavaScript", "TypeScript", "CSS", "HTML", "Vue"}
-    fe_raw = sum(lang_pct_map.get(l, 0) for l in frontend_langs)
-    fe_score = min(fe_raw * 0.9, 100)
-
-    # 2. Backend: Python/Go/etc — realistic (17% backend → ~20)
-    backend_langs = {"Python", "Go", "Java", "Rust", "PLpgSQL", "Ruby", "PHP", "C", "C++", "Shell"}
-    be_raw = sum(lang_pct_map.get(l, 0) for l in backend_langs)
-    be_score = min(be_raw * 1.2, 100)
-
-    # 3. Productivity: 1 commit/day → 80pts, 2/day → 100pts
-    commits_per_day = commits / max(age_days, 1)
-    prod_score = min(commits_per_day * 80, 100)
-
-    # 4. Stars: actual star count (no cap)
-    stars_score = stars
-
-    # 5. Collaboration: PRs + issues (realistic, 1 PR ≈ 8pts)
-    collab_score = min(prs * 8 + issues * 3, 100)
-
-    # 6. Breadth: language diversity + repo count (realistic cap)
-    breadth_score = min(len(langs) * 6 + repos * 3, 100)
-
-    scores = [
-        ("Frontend",      round(max(fe_score,    10))),
-        ("Backend",       round(max(be_score,    10))),
-        ("Productivity",  round(max(prod_score,  10))),
-        ("Stars",         round(max(stars_score, 10))),
-        ("Collaboration", round(max(collab_score,10))),
-        ("Breadth",       round(max(breadth_score,10))),
-    ]
-    return scores
+    if score >= 500:
+        grade = "A+"
+        percent = 85
+    elif score >= 350:
+        grade = "A"
+        percent = 75
+    elif score >= 240:
+        grade = "A-"
+        percent = 65
+    elif score >= 140:
+        grade = "B+"
+        percent = 50
+    elif score >= 80:
+        grade = "B"
+        percent = 40
+    elif score >= 40:
+        grade = "B-"
+        percent = 30
+    elif score >= 20:
+        grade = "C+"
+        percent = 20
+    else:
+        grade = "C"
+        percent = 10
+        
+    return grade, percent
 
 
 # ─────────────────────────────────────────────
 #  SVG generators
 # ─────────────────────────────────────────────
 
-def fmt_num(n):
-    if n >= 10000:
-        return f"{n/1000:.1f}K"
-    if n >= 1000:
-        return f"{n/1000:.1f}K"
-    return str(n)
-
-
-def gen_header(data):
-    """Generate the compact header card with key stats."""
-    stars = fmt_num(data["total_stars"])
-    commits = fmt_num(data["total_commits"])
-    repos = data["repos_count"]
-    prs = fmt_num(data["total_prs"])
-
-    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="840" height="90" viewBox="0 0 840 90">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0a0e27"/><stop offset="100%" stop-color="#0d1537"/>
-    </linearGradient>
-    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-  </defs>
-  <style>
-    @keyframes fadeIn {{ 0% {{ opacity:0; transform:translateY(10px); }} 100% {{ opacity:1; transform:translateY(0); }} }}
-    @keyframes twinkle {{ 0%,100% {{ opacity:0.15; }} 50% {{ opacity:0.6; }} }}
-    @keyframes borderP {{ 0%,100% {{ stroke-opacity:0.15; }} 50% {{ stroke-opacity:0.35; }} }}
-    .fi {{ animation: fadeIn 0.5s ease-out both; }}
-    .border {{ animation: borderP 4s ease-in-out infinite; }}
-    .star {{ animation: twinkle 3s ease-in-out infinite; }}
-  </style>
-
-  <rect x="1" y="1" width="838" height="88" rx="16" fill="url(#bg)"/>
-  <rect x="1" y="1" width="838" height="88" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
-
-  <!-- Stars -->
-  <circle cx="80" cy="30" r="1" fill="#00d4ff" class="star"/><circle cx="200" cy="20" r="0.8" fill="#7c3aed" class="star" style="animation-delay:1s"/>
-  <circle cx="640" cy="25" r="1.1" fill="#00d4ff" class="star" style="animation-delay:0.5s"/><circle cx="760" cy="35" r="0.7" fill="#a855f7" class="star" style="animation-delay:2s"/>
-  <circle cx="400" cy="15" r="0.9" fill="#00d4ff" class="star" style="animation-delay:1.5s"/>
-  <circle cx="120" cy="55" r="0.8" fill="#7c3aed" class="star" style="animation-delay:0.8s"/><circle cx="720" cy="50" r="1" fill="#00d4ff" class="star" style="animation-delay:2.2s"/>
-
-  <!-- Stats row -->
-  <g class="fi" style="animation-delay:0.25s">
-    <rect x="90" y="17" width="130" height="56" rx="10" fill="rgba(255,215,0,0.04)" stroke="rgba(255,215,0,0.1)" stroke-width="1"/>
-    <text x="155" y="40" text-anchor="middle" font-family="\'SFMono-Regular\',Consolas,monospace" font-size="20" font-weight="700" fill="#FFD700" filter="url(#glow)">{stars}</text>
-    <text x="155" y="60" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">⭐ STARS</text>
-  </g>
-  <g class="fi" style="animation-delay:0.35s">
-    <rect x="240" y="17" width="130" height="56" rx="10" fill="rgba(0,255,136,0.04)" stroke="rgba(0,255,136,0.1)" stroke-width="1"/>
-    <text x="305" y="40" text-anchor="middle" font-family="\'SFMono-Regular\',Consolas,monospace" font-size="20" font-weight="700" fill="#00ff88" filter="url(#glow)">{commits}</text>
-    <text x="305" y="60" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">🔥 COMMITS</text>
-  </g>
-  <g class="fi" style="animation-delay:0.45s">
-    <rect x="390" y="17" width="130" height="56" rx="10" fill="rgba(124,58,237,0.04)" stroke="rgba(124,58,237,0.15)" stroke-width="1"/>
-    <text x="455" y="40" text-anchor="middle" font-family="\'SFMono-Regular\',Consolas,monospace" font-size="20" font-weight="700" fill="#7c3aed" filter="url(#glow)">{prs}</text>
-    <text x="455" y="60" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">🔀 PRs</text>
-  </g>
-  <g class="fi" style="animation-delay:0.55s">
-    <rect x="540" y="17" width="130" height="56" rx="10" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
-    <text x="605" y="40" text-anchor="middle" font-family="\'SFMono-Regular\',Consolas,monospace" font-size="20" font-weight="700" fill="#00d4ff" filter="url(#glow)">{repos}</text>
-    <text x="605" y="60" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="10" fill="#8892b0" letter-spacing="1">📦 REPOS</text>
-  </g>
-</svg>'''
-
-
-def gen_tech_stack(data):
-    """Generate tech stack bars from real language data."""
-    langs = data["lang_pcts"]
-    if not langs:
-        return ""
+def gen_stats_card(data):
+    """Generate the GitHub Stats card matching the target layout exactly."""
+    title_name = "Ruize Sun" if data["name"] == GITHUB_USERNAME else data["name"]
+    title = f"{title_name}'s GitHub Stats"
     
-    # Square card: 480 x 480
-    row_height = 42
-    top_pad = 75
-    card_h = 480
-    bar_w = 380
-
-    rows_svg = ""
-    # Render up to 8 languages
-    for i, (lang, pct) in enumerate(langs[:8]):
-        y = top_pad + i * row_height
-        fill_w = pct / 100 * bar_w
-        color = LANG_COLORS.get(lang, "#888888")
-        delay = 0.3 + i * 0.1
-        rows_svg += f'''
-    <g class="row" style="animation-delay:{delay}s">
-      <text x="50" y="{y}" class="label">{lang}</text>
-      <text x="430" y="{y}" text-anchor="end" class="pct" fill="{color}">{pct:.1f}%</text>
-      <rect x="50" y="{y+6}" width="{bar_w}" height="8" rx="4" class="track"/>
-      <rect x="50" y="{y+6}" width="{fill_w}" height="8" rx="4" fill="{color}" opacity="0.85">
-        <animate attributeName="width" from="0" to="{fill_w}" dur="1.2s" begin="{delay}s" fill="freeze" calcMode="spline" keySplines="0.25 0.46 0.45 0.94"/>
-      </rect>
-      <circle cx="{50+fill_w}" cy="{y+10}" r="3" fill="{color}" class="dot" style="animation-delay:{delay+1.2}s"/>
-    </g>'''
-
-    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480">
+    total_stars = data["total_stars"]
+    total_commits = data["total_commits"]
+    total_prs = data["total_prs"]
+    total_issues = data["total_issues"]
+    repos_count = data["repos_count"]
+    
+    grade, percent = calculate_grade(data)
+    
+    # Circumference of r=40 is 2 * pi * 40 = 251.327
+    circumference = 251.3
+    dashoffset = circumference * (1 - percent / 100)
+    
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="495" height="195" viewBox="0 0 495 195">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0a0e27"/><stop offset="100%" stop-color="#0d1537"/>
-    </linearGradient>
-    <linearGradient id="tG" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7c3aed"/>
-    </linearGradient>
-    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#000" flood-opacity="0.1"/>
+    </filter>
   </defs>
   <style>
-    @keyframes fadeIn {{ 0% {{ opacity:0; }} 100% {{ opacity:1; }} }}
-    @keyframes pulse {{ 0%,100% {{ opacity:0.4;r:3; }} 50% {{ opacity:1;r:5; }} }}
-    @keyframes borderP {{ 0%,100% {{ stroke-opacity:0.15; }} 50% {{ stroke-opacity:0.3; }} }}
-    .row {{ animation: fadeIn 0.5s ease-out both; }}
-    .label {{ font-family:\'Segoe UI\',system-ui,sans-serif; font-size:13px; fill:#e0e6f0; }}
-    .pct {{ font-family:\'SFMono-Regular\',Consolas,monospace; font-size:13px; font-weight:600; }}
-    .track {{ fill:rgba(255,255,255,0.06); }}
-    .dot {{ animation: pulse 2s ease-in-out infinite; opacity:0; }}
-    .border {{ animation: borderP 4s ease-in-out infinite; }}
+    .title {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #2f80ed; }}
+    .label {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 500; fill: #333333; }}
+    .value {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: bold; fill: #333333; }}
+    .grade {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 26px; font-weight: 800; fill: #333333; }}
+    .circle-bg {{ stroke: #e1e9f5; stroke-width: 6; fill: none; }}
+    .circle-progress {{ stroke: #3872e0; stroke-width: 6; stroke-linecap: round; fill: none; }}
   </style>
-  <rect x="1" y="1" width="478" height="478" rx="16" fill="url(#bg)"/>
-  <rect x="1" y="1" width="478" height="478" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
-  <text x="240" y="45" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="18" font-weight="700" letter-spacing="3" fill="url(#tG)" filter="url(#glow)">⚡ TECH STACK</text>
-  {rows_svg}
-</svg>'''
+  <rect x="0.5" y="0.5" width="494" height="194" rx="5" fill="#fffefe" stroke="#e4e2e2" stroke-width="1"/>
+  
+  <text x="25" y="35" class="title">{title}</text>
+  
+  <!-- Stars Row -->
+  <g transform="translate(0, 0)">
+    <svg class="icon" x="25" y="50" viewBox="0 0 16 16" version="1.1" width="16" height="16">
+      <path fill="#3872e0" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25zm0 2.445L6.615 5.5a.75.75 0 01-.564.41l-3.097.45 2.24 2.184a.75.75 0 01.216.664l-.528 3.084 2.769-1.456a.75.75 0 01.698 0l2.77 1.456-.53-3.084a.75.75 0 01.216-.664l2.24-2.183-3.096-.45a.75.75 0 01-.564-.41L8 2.694v.001z"/>
+    </svg>
+    <text x="55" y="63" class="label">Total Stars Earned:</text>
+    <text x="240" y="63" class="value">{total_stars}</text>
+  </g>
 
+  <!-- Commits Row -->
+  <g transform="translate(0, 0)">
+    <svg class="icon" x="25" y="75" viewBox="0 0 16 16" version="1.1" width="16" height="16">
+      <path fill="#3872e0" d="M1.643 3.143L.427 1.927A.25.25 0 000 2.104V5.75c0 .138.112.25.25.25h3.646a.25.25 0 00.177-.427L2.715 4.215a6.5 6.5 0 11-1.18 4.458.75.75 0 10-1.493.154 8.001 8.001 0 101.6-5.684zM7.75 4a.75.75 0 01.75.75v2.992l2.028.812a.75.75 0 01-.557 1.392l-2.5-1A.75.75 0 017 8.25v-3.5A.75.75 0 017.75 4z"/>
+    </svg>
+    <text x="55" y="88" class="label">Total Commits:</text>
+    <text x="240" y="88" class="value">{total_commits}</text>
+  </g>
 
-def gen_radar(data):
-    """Generate hexagonal radar chart from calculated scores."""
-    scores = calculate_radar_scores(data)
-    cx, cy = 240, 245
-    R = 105
+  <!-- PRs Row -->
+  <g transform="translate(0, 0)">
+    <svg class="icon" x="25" y="100" viewBox="0 0 16 16" version="1.1" width="16" height="16">
+      <path fill="#3872e0" d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122v5.256a2.251 2.251 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zM11 2.5h-1V4h1a1 1 0 011 1v5.628a2.251 2.251 0 101.5 0V5A2.5 2.5 0 0011 2.5zm1 10.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zM3.75 12a.75.75 0 100 1.5.75.75 0 000-1.5z"/>
+    </svg>
+    <text x="55" y="113" class="label">Total PRs:</text>
+    <text x="240" y="113" class="value">{total_prs}</text>
+  </g>
 
-    # Hexagon vertex calculator (starts at top, clockwise)
-    def hex_point(i, scale=1.0):
-        angle = math.radians(-90 + i * 60)
-        return (cx + R * scale * math.cos(angle), cy + R * scale * math.sin(angle))
+  <!-- Issues Row -->
+  <g transform="translate(0, 0)">
+    <svg class="icon" x="25" y="125" viewBox="0 0 16 16" version="1.1" width="16" height="16">
+      <path fill="#3872e0" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9 3a1 1 0 11-2 0 1 1 0 012 0zm-.25-6.25a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0v-3.5z"/>
+    </svg>
+    <text x="55" y="138" class="label">Total Issues:</text>
+    <text x="240" y="138" class="value">{total_issues}</text>
+  </g>
 
-    # Grid hexagons
-    grids = ""
-    for pct in [0.25, 0.5, 0.75, 1.0]:
-        pts = " ".join(f"{hex_point(i, pct)[0]:.1f},{hex_point(i, pct)[1]:.1f}" for i in range(6))
-        grids += f'  <polygon points="{pts}" class="grid"/>\n'
+  <!-- Contributed Row -->
+  <g transform="translate(0, 0)">
+    <svg class="icon" x="25" y="150" viewBox="0 0 16 16" version="1.1" width="16" height="16">
+      <path fill="#3872e0" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"/>
+    </svg>
+    <text x="55" y="163" class="label">Contributed to (last year):</text>
+    <text x="240" y="163" class="value">{repos_count}</text>
+  </g>
 
-    # Axis lines
-    axes = ""
-    for i in range(6):
-        px, py = hex_point(i)
-        axes += f'  <line x1="{cx}" y1="{cy}" x2="{px:.1f}" y2="{py:.1f}" class="axis"/>\n'
-
-    # Data polygon
-    data_pts = []
-    for i, (_, val) in enumerate(scores):
-        scale = min(val / 100, 1.0)
-        px, py = hex_point(i, scale)
-        data_pts.append((px, py))
-    poly_str = " ".join(f"{p[0]:.1f},{p[1]:.1f}" for p in data_pts)
-
-    # Vertex dots
-    dots = ""
-    for i, (px, py) in enumerate(data_pts):
-        dots += f'  <circle cx="{px:.1f}" cy="{py:.1f}" r="4" fill="#00d4ff" class="vertex" filter="url(#dg)" style="animation-delay:{i*0.3}s"/>\n'
-
-    # Labels
-    labels = ""
-    for i, (name, val) in enumerate(scores):
-        lx, ly = hex_point(i, 1.25)
-        anchor = "middle"
-        if i == 1 or i == 2:
-            anchor = "start"
-        elif i == 4 or i == 5:
-            anchor = "end"
-        labels += f'  <text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" class="lbl" style="animation-delay:{0.5+i*0.1}s">{name}</text>\n'
-        labels += f'  <text x="{lx:.1f}" y="{ly+14:.1f}" text-anchor="{anchor}" class="score" style="animation-delay:{0.6+i*0.1}s">{val}</text>\n'
-
-    avg   = sum(v for _, v in scores) / len(scores)
-    grade = grade_from_avg(avg)
-
-    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0a0e27"/><stop offset="100%" stop-color="#0d1537"/>
-    </linearGradient>
-    <linearGradient id="sG" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#7c3aed"/>
-    </linearGradient>
-    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <filter id="pg"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <filter id="dg"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-  </defs>
-  <style>
-    @keyframes drawP {{ 0% {{ stroke-dashoffset:800; }} 100% {{ stroke-dashoffset:0; }} }}
-    @keyframes fadeIn {{ 0% {{ opacity:0; }} 100% {{ opacity:1; }} }}
-    @keyframes pulse {{ 0%,100% {{ opacity:0.6;r:4; }} 50% {{ opacity:1;r:6; }} }}
-    @keyframes fillF {{ 0% {{ fill-opacity:0; }} 100% {{ fill-opacity:0.15; }} }}
-    @keyframes borderP {{ 0%,100% {{ stroke-opacity:0.15; }} 50% {{ stroke-opacity:0.3; }} }}
-    .grid {{ stroke:rgba(0,212,255,0.08); stroke-width:1; fill:none; }}
-    .axis {{ stroke:rgba(0,212,255,0.12); stroke-width:1; }}
-    .dpoly {{ fill:rgba(0,212,255,0.15); stroke:#00d4ff; stroke-width:2; stroke-dasharray:800; animation:drawP 2s ease-out 0.5s both; }}
-    .dfill {{ fill:rgba(0,212,255,0.15); stroke:none; animation:fillF 1s ease-out 2s both; fill-opacity:0; }}
-    .vertex {{ animation: pulse 2.5s ease-in-out infinite; }}
-    .lbl {{ font-family:\'Segoe UI\',system-ui,sans-serif; font-size:12px; fill:#e0e6f0; animation:fadeIn 0.5s ease-out both; }}
-    .score {{ font-family:\'SFMono-Regular\',Consolas,monospace; font-size:11px; fill:#00d4ff; font-weight:600; animation:fadeIn 0.5s ease-out both; }}
-    .border {{ animation: borderP 4s ease-in-out infinite; }}
-  </style>
-
-  <rect x="1" y="1" width="478" height="478" rx="16" fill="url(#bg)"/>
-  <rect x="1" y="1" width="478" height="478" rx="16" fill="none" stroke="#00d4ff" stroke-width="1" class="border"/>
-
-  <!-- B+ Grade Ring -->
-  <circle cx="240" cy="62" r="28" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="5"/>
-  <circle cx="240" cy="62" r="28" fill="none" stroke="url(#sG)" stroke-width="5" stroke-dasharray="176" stroke-dashoffset="35" stroke-linecap="round"/>
-  <text x="240" y="69" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="18" font-weight="800" fill="#ffffff" filter="url(#glow)">{grade}</text>
-  <text x="240" y="105" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="10" font-weight="700" fill="#8892b0" letter-spacing="1">DEVELOPER RANK</text>
-
-{grids}
-{axes}
-  <polygon points="{poly_str}" class="dfill"/>
-  <polygon points="{poly_str}" class="dpoly" filter="url(#pg)"/>
-{dots}
-{labels}
-
-  <line x1="140" y1="415" x2="340" y2="415" stroke="rgba(0,212,255,0.1)" stroke-width="1"/>
-  <text x="240" y="435" text-anchor="middle" font-family="\'Segoe UI\',system-ui,sans-serif" font-size="11" fill="#8892b0" letter-spacing="2">OVERALL</text>
-  <text x="240" y="456" text-anchor="middle" font-family="\'SFMono-Regular\',Consolas,monospace" font-size="22" font-weight="700" fill="url(#sG)" filter="url(#glow)">{avg:.1f} / 100</text>
+  <!-- Grade Ring -->
+  <g transform="translate(395, 110)">
+    <circle cx="0" cy="0" r="40" class="circle-bg"/>
+    <circle cx="0" cy="0" r="40" class="circle-progress" stroke-dasharray="251.3" stroke-dashoffset="{dashoffset}" transform="rotate(-90)"/>
+    <text x="0" y="9" text-anchor="middle" class="grade">{grade}</text>
+  </g>
 </svg>'''
 
 
@@ -449,8 +259,7 @@ def main():
     data = fetch_data()
 
     cards = {
-        "tech-stack.svg": gen_tech_stack(data),
-        "radar.svg": gen_radar(data),
+        "github-stats.svg": gen_stats_card(data),
     }
 
     for fname, svg in cards.items():
