@@ -22,7 +22,7 @@
 **一键安装 / Install**
 
 ```sh
-dsh plugin --profile web add dsh-benign-exit
+dsh plugin --profile web add github:sunruize93-cmyk/dsh-benign-exit
 ```
 
 **社区插件市场 / Community Marketplaces**
