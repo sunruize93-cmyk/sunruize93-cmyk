@@ -5,30 +5,3 @@
 <img src="./svg/github-stats.svg" alt="GitHub Stats" width="495" />
 
 </div>
-
----
-
-### 🧩 DeepSeek Harness 插件生态
-
-*DeepSeek Harness 没有官方插件市场——生态由社区市场按 `dsh-plugin` GitHub topic 自动收录。我的插件已被收录。*
-
-**我的插件 / My Plugins**
-
-| 插件 | 一句话 | 市场状态 |
-|---|---|---|
-| [dsh-benign-exit](https://github.com/sunruize93-cmyk/dsh-benign-exit) | 标注 bash/pwsh 良性非零退出码(grep 1=无匹配、git diff=有差异…),让模型停止重复排查正常结果 | ![stars](https://img.shields.io/github/stars/sunruize93-cmyk/dsh-benign-exit) · ✅ 已被 [awesome-dsh-plugins](https://github.com/ZeroPointRepo/awesome-dsh-plugins) 收录 |
-| [dsh-doudizhu](https://github.com/sunruize93-cmyk/dsh-doudizhu) | 等 agent 时和朋友开一把斗地主:积分(A)+算力赌注(C)双结算 | ![stars](https://img.shields.io/github/stars/sunruize93-cmyk/dsh-doudizhu) · 新 |
-
-**一键安装 / Install**
-
-```sh
-dsh plugin --profile web add github:sunruize93-cmyk/dsh-benign-exit
-```
-
-**社区插件市场 / Community Marketplaces**
-
-- [**DSH 1024 Store**](https://deepseek1024.com) — 最大市场(4,100+ 插件),免费搜索 API
-- [**awesome-dsh-plugins**](https://github.com/ZeroPointRepo/awesome-dsh-plugins) — 收录了 dsh-benign-exit 的目录
-- [**WhaleHub**](https://whalehub-dsh.vercel.app) — 一键复制安装命令
-- [**dshmarketplace.dev**](https://dshmarketplace.dev) — 2,500+ 插件,含权限/风险信息
-- [**dshmarket**](https://www.npmjs.com/package/dshmarket) — DSH Web 内置市场插件
