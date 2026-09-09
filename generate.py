@@ -169,44 +169,8 @@ def fetch_data():
 # ─────────────────────────────────────────────
 
 def calculate_grade(data):
-    commits = data["total_commits"]
-    stars = data["total_stars"]
-    prs = data["total_prs"]
-    issues = data["total_issues"]
-    repos = data["repos_count"]
-
-    # Calculate weighted score (realistic calibration)
-    score = commits * 0.2 + stars * 1.2 + prs * 6.0 + issues * 2.0 + repos * 3.0
-
-    if score >= 1200:
-        grade = "S"
-        percent = 95
-    elif score >= 600:
-        grade = "A+"
-        percent = 85
-    elif score >= 350:
-        grade = "A"
-        percent = 75
-    elif score >= 240:
-        grade = "A-"
-        percent = 65
-    elif score >= 140:
-        grade = "B+"
-        percent = 50
-    elif score >= 80:
-        grade = "B"
-        percent = 40
-    elif score >= 40:
-        grade = "B-"
-        percent = 30
-    elif score >= 20:
-        grade = "C+"
-        percent = 20
-    else:
-        grade = "C"
-        percent = 10
-        
-    return grade, percent
+    # Keep grade at A- per user preference
+    return "A-", 65
 
 
 # ─────────────────────────────────────────────

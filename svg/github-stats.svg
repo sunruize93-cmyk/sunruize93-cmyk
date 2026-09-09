@@ -64,7 +64,7 @@
   <!-- Grade Ring -->
   <g transform="translate(395, 110)">
     <circle cx="0" cy="0" r="40" class="circle-bg"/>
-    <circle cx="0" cy="0" r="40" class="circle-progress" stroke-dasharray="251.3" stroke-dashoffset="12.565000000000012" transform="rotate(-90)"/>
-    <text x="0" y="9" text-anchor="middle" class="grade">S</text>
+    <circle cx="0" cy="0" r="40" class="circle-progress" stroke-dasharray="251.3" stroke-dashoffset="87.955" transform="rotate(-90)"/>
+    <text x="0" y="9" text-anchor="middle" class="grade">A-</text>
   </g>
 </svg>
