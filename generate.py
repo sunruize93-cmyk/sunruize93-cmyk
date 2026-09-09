@@ -88,6 +88,24 @@ def fetch_data():
     total_stars = sum(r.get("stargazers_count", 0) for r in repos)
     total_forks = sum(r.get("forks_count", 0) for r in repos)
 
+    # ── Contributed External Repositories (e.g. Official Contributor) ──
+    CONTRIBUTED_REPOS = [
+        "a2aproject/a2a-js",
+    ]
+    for cr in CONTRIBUTED_REPOS:
+        cr_data = gh_api(f"repos/{cr}")
+        if cr_data and "stargazers_count" in cr_data:
+            s = cr_data.get("stargazers_count", 0)
+            f = cr_data.get("forks_count", 0)
+            total_stars += s
+            total_forks += f
+            print(f"  ⭐ Included {s} stars from contributed repo: {cr}")
+        else:
+            fallback_stars = {"a2aproject/a2a-js": 609}
+            s = fallback_stars.get(cr, 609)
+            total_stars += s
+            print(f"  ⭐ Included {s} stars (fallback) from {cr}")
+
     # ── Languages ──
     lang_bytes = {}
     for r in repos:
@@ -130,7 +148,7 @@ def fetch_data():
     data = {
         "name": user.get("name") or GITHUB_USERNAME,
         "bio": user.get("bio") or "",
-        "repos_count": len(repos),
+        "repos_count": len(repos) + len(CONTRIBUTED_REPOS),
         "total_stars": total_stars,
         "total_forks": total_forks,
         "total_commits": total_commits,
@@ -157,10 +175,13 @@ def calculate_grade(data):
     issues = data["total_issues"]
     repos = data["repos_count"]
 
-    # Calculate weighted score (realistic calibration for B+/A- range)
+    # Calculate weighted score (realistic calibration)
     score = commits * 0.2 + stars * 1.2 + prs * 6.0 + issues * 2.0 + repos * 3.0
 
-    if score >= 500:
+    if score >= 1200:
+        grade = "S"
+        percent = 95
+    elif score >= 600:
         grade = "A+"
         percent = 85
     elif score >= 350:
